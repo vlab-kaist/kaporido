@@ -1,0 +1,27 @@
+{
+  "name": "kaporido-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^1.0.0-next.30",
+    "@tsconfig/svelte": "^2.0.1",
+    "@types/three": "^0.140.0",
+    "chart.js": "^3.8.0",
+    "sass": "^1.52.1",
+    "svelte": "3.38.0",
+    "svelte-check": "^2.2.7",
+    "svelte-preprocess": "^4.10.6",
+    "svelthree": "^0.119.0-5",
+    "three": "^0.140.2",
+    "tslib": "^2.4.0",
+    "typescript": "^4.7.2",
+    "vite": "^2.9.9"
+  }
+}
