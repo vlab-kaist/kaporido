@@ -11,7 +11,7 @@
     import atmosphereMaterial from "../lib/atmosphereMaterial";
     import {selectedObj, activeObj} from './store'
 
-    export let scene, position = [0, 0], vertical = true, kaist, postech, id, place;
+    export let scene, position = [0, 0], vertical = true, kaist, postech, id, place, length = 2;
 
     function getPosition(x, y, z = 0.25) {
         if (y < 0 || y > mapPlaceCount) return [
@@ -20,14 +20,14 @@
             (x - blockerCount / 2 + 0.5) * (mapSize / blockerCount)
         ]
         return [
-            (y - mapPlaceCount / 2 + (vertical && 1)) * placePadding,
+            (y - mapPlaceCount / 2 + (vertical && length / 2)) * placePadding,
             z,
-            (x - mapPlaceCount / 2 + (!vertical && 1)) * placePadding
+            (x - mapPlaceCount / 2 + (!vertical && length / 2)) * placePadding
         ]
     }
 
-    let pos = getPosition(position[0], position[1]), rot = [0, 0, 0];
-    let lastPosition = position, lastVertical = -1;
+    let pos = getPosition(position[0], position[1]), rot = [0, vertical ? 0 : Math.PI / 2, 0];
+    let lastPosition = position, lastVertical = vertical;
 
     let blockerGeometry = new BoxBufferGeometry(1, 1, 1);
     const blockerMaterial = new MeshPhongMaterial({opacity: place ? 0 : 1, transparent: place});
@@ -86,7 +86,7 @@
 <Mesh
         {scene} castShadow receiveShadow name={id} geometry={blockerGeometry} material={blockerMaterial}
         pos={[$_pos1, $_pos2, $_pos3]} rot={[$_rot1, $_rot2, $_rot3]}
-        scale={[placeMargin + placeSize * 2, kaist?0.51:0.5, placeMargin]}
+        scale={[placeMargin + placeSize * length, kaist?0.51:0.5, placeMargin]}
         mat={{ color: kaist?0x2d8ad6:0xed4434 }}/>
 
 {#if $activeObj === id}
@@ -96,7 +96,7 @@
             material={activeMaterial}
             pos={[$_pos1, $_pos2, $_pos3]}
             rot={[$_rot1, $_rot2, $_rot3]}
-            scale={[placeMargin + placeSize * 2+0.02, 0.52, placeMargin+0.02]}
+            scale={[placeMargin + placeSize * length + 0.02, 0.52, placeMargin + 0.02]}
             castShadow
             receiveShadow/>
 {:else if $selectedObj === id}
@@ -107,7 +107,7 @@
             mat={{ color: 0xffffff }}
             pos={[$_pos1, $_pos2, $_pos3]}
             rot={[$_rot1, $_rot2, $_rot3]}
-            scale={[placeMargin + placeSize * 2+0.02, 0.52, placeMargin+0.02]}
+            scale={[placeMargin + placeSize * length + 0.02, 0.52, placeMargin + 0.02]}
             castShadow
             receiveShadow/>
 {/if}

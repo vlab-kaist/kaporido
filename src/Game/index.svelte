@@ -36,6 +36,7 @@
                 temp.push({
                     position: [i, -2.2],
                     vertical: true,
+                    length: 2,
                     id: i,
                 });
             }
@@ -48,7 +49,8 @@
                 temp.push({
                     position: [i, mapPlaceCount + 0.2],
                     vertical: true,
-                    id: i,
+                    length: 2,
+                    id: blockerCount - i - 1,
                 });
             }
             $postechBlockers = temp;
@@ -69,7 +71,7 @@
     }
 
     let cnt = 0, action, usedKaist = 0, usedPostech = 0;
-    $: manual = round % 2;
+    $: manual = true;
 
     $: {
         let _ = action;
@@ -82,7 +84,7 @@
     $: {
         if (action === 'move') $selectable = 'm';
         if (action === 'block') {
-            if (!$activeObj) $selectable = 'k';
+            if (!$activeObj) $selectable = round % 2 ? 'k' : 'p';
             else $selectable = 'c';
         }
         if (action === 'turn') $selectable = 'b';
@@ -98,6 +100,219 @@
         }
     }
 
+    function rotate(blockers, x, y) {
+        let _k = [];
+        for (const i of blockers) {
+            if (i.length === 2) {
+                if (i.vertical) {
+                    if (y === i.position[1]) {
+                        if (x === i.position[0]) {
+                            i.position = [i.position[0], i.position[1] + 2];
+                            i.vertical = false;
+                        } else if (x + 1 === i.position[0]) {
+                            i.position = [i.position[0] - 1, i.position[1] + 1];
+                            i.vertical = false;
+                        } else if (x + 2 === i.position[0]) {
+                            i.position = [i.position[0] - 2, i.position[1]];
+                            i.vertical = false;
+                        }
+                    } else if (y + 1 === i.position[1]) {
+                        if (x === i.position[0]) {
+                            _k.push({
+                                position: [i.position[0], i.position[1] + 1],
+                                vertical: true,
+                                length: 1,
+                                id: i.id + '_'
+                            })
+                            i.position = [i.position[0] + 1, i.position[1] + 1];
+                            i.vertical = false;
+                            i.length = 1;
+                        } else if (x + 1 === i.position[0]) {
+                            _k.push({
+                                position: [i.position[0], i.position[1] + 1],
+                                vertical: true,
+                                length: 1,
+                                id: i.id + '_'
+                            })
+                            i.position = [i.position[0], i.position[1]];
+                            i.vertical = false;
+                            i.length = 1;
+                        } else if (x + 2 === i.position[0]) {
+                            _k.push({
+                                position: [i.position[0], i.position[1] + 1],
+                                vertical: true,
+                                length: 1,
+                                id: i.id + '_'
+                            })
+                            i.position = [i.position[0] - 1, i.position[1] - 1];
+                            i.vertical = false;
+                            i.length = 1;
+                        }
+                    } else if (y - 1 === i.position[1]) {
+                        if (x === i.position[0]) {
+                            _k.push({
+                                position: [i.position[0], i.position[1]],
+                                vertical: true,
+                                length: 1,
+                                id: i.id + '_'
+                            })
+                            i.position = [i.position[0], i.position[1] + 3];
+                            i.vertical = false;
+                            i.length = 1;
+                        } else if (x + 1 === i.position[0]) {
+                            _k.push({
+                                position: [i.position[0], i.position[1]],
+                                vertical: true,
+                                length: 1,
+                                id: i.id + '_'
+                            })
+                            i.position = [i.position[0] - 1, i.position[1] + 2];
+                            i.vertical = false;
+                            i.length = 1;
+                        } else if (x + 2 === i.position[0]) {
+                            _k.push({
+                                position: [i.position[0], i.position[1]],
+                                vertical: true,
+                                length: 1,
+                                id: i.id + '_'
+                            })
+                            i.position = [i.position[0] - 2, i.position[1] + 1];
+                            i.vertical = false;
+                            i.length = 1;
+                        }
+                    }
+                } else {
+                    if (x === i.position[0]) {
+                        if (y === i.position[1]) {
+                            i.position = [i.position[0], i.position[1]];
+                            i.vertical = true;
+                        } else if (y + 1 === i.position[1]) {
+                            i.position = [i.position[0] + 1, i.position[1] - 1];
+                            i.vertical = true;
+                        } else if (y + 2 === i.position[1]) {
+                            i.position = [i.position[0] + 2, i.position[1] - 2];
+                            i.vertical = true;
+                        }
+                    } else if (x + 1 === i.position[0]) {
+                        if (y === i.position[1]) {
+                            _k.push({
+                                position: [i.position[0] + 1, i.position[1]],
+                                vertical: false,
+                                length: 1,
+                                id: i.id + '_'
+                            })
+                            i.position = [i.position[0] - 1, i.position[1]];
+                            i.vertical = true;
+                            i.length = 1;
+                        } else if (y + 1 === i.position[1]) {
+                            _k.push({
+                                position: [i.position[0] + 1, i.position[1]],
+                                vertical: false,
+                                length: 1,
+                                id: i.id + '_'
+                            })
+                            i.position = [i.position[0], i.position[1] - 1];
+                            i.vertical = true;
+                            i.length = 1;
+                        } else if (y + 2 === i.position[1]) {
+                            _k.push({
+                                position: [i.position[0] + 1, i.position[1]],
+                                vertical: false,
+                                length: 1,
+                            })
+                            i.position = [i.position[0] + 1, i.position[1] - 2];
+                            i.vertical = true;
+                            i.length = 1;
+                        }
+                    } else if (x - 1 === i.position[0]) {
+                        if (y === i.position[1]) {
+                            _k.push({
+                                position: [i.position[0], i.position[1]],
+                                vertical: false,
+                                length: 1,
+                                id: i.id + '_'
+                            })
+                            i.position = [i.position[0] + 1, i.position[1] + 1];
+                            i.vertical = true;
+                            i.length = 1;
+                        } else if (y + 1 === i.position[1]) {
+                            _k.push({
+                                position: [i.position[0], i.position[1]],
+                                vertical: false,
+                                length: 1,
+                                id: i.id + '_'
+                            })
+                            i.position = [i.position[0] + 2, i.position[1]];
+                            i.vertical = true;
+                            i.length = 1;
+                        } else if (y + 2 === i.position[1]) {
+                            _k.push({
+                                position: [i.position[0], i.position[1]],
+                                vertical: false,
+                                length: 1,
+                                id: i.id + '_'
+                            })
+                            i.position = [i.position[0] + 3, i.position[1] - 1];
+                            i.vertical = true;
+                            i.length = 1;
+                        }
+                    }
+                }
+            } else if (i.length === 1) {
+                if (i.vertical) {
+                    if (y === i.position[1]) {
+                        if (x === i.position[0]) {
+                            i.position = [i.position[0], i.position[1] + 2];
+                            i.vertical = false;
+                        } else if (x + 1 === i.position[0]) {
+                            i.position = [i.position[0] - 1, i.position[1] + 1];
+                            i.vertical = false;
+                        } else if (x + 2 === i.position[0]) {
+                            i.position = [i.position[0] - 2, i.position[1]];
+                            i.vertical = false;
+                        }
+                    } else if (y + 1 === i.position[1]) {
+                        if (x === i.position[0]) {
+                            i.position = [i.position[0] + 1, i.position[1] + 1];
+                            i.vertical = false;
+                        } else if (x + 1 === i.position[0]) {
+                            i.position = [i.position[0], i.position[1]];
+                            i.vertical = false;
+                        } else if (x + 2 === i.position[0]) {
+                            i.position = [i.position[0] - 1, i.position[1] - 1];
+                            i.vertical = false;
+                        }
+                    }
+                } else {
+                    if (x === i.position[0]) {
+                        if (y === i.position[1]) {
+                            i.position = [i.position[0], i.position[1] + 1];
+                            i.vertical = true;
+                        } else if (y + 1 === i.position[1]) {
+                            i.position = [i.position[0] + 1, i.position[1]];
+                            i.vertical = true;
+                        } else if (y + 2 === i.position[1]) {
+                            i.position = [i.position[0] + 2, i.position[1] - 1];
+                            i.vertical = true;
+                        }
+                    } else if (x + 1 === i.position[0]) {
+                        if (y === i.position[1]) {
+                            i.position = [i.position[0] - 1, i.position[1]];
+                            i.vertical = true;
+                        } else if (y + 1 === i.position[1]) {
+                            i.position = [i.position[0], i.position[1] - 1];
+                            i.vertical = true;
+                        } else if (y + 2 === i.position[1]) {
+                            i.position = [i.position[0] + 1, i.position[1] - 2];
+                            i.vertical = true;
+                        }
+                    }
+                }
+            }
+        }
+        return [...blockers, ..._k];
+    }
+
     function handleClick() {
         if (!$selectedObj || !click) return;
         if (action === 'block') {
@@ -105,18 +320,27 @@
             else {
                 const [_, _v, _x, _y] = $selectedObj.split('_');
                 let x = parseInt(_x), y = parseInt(_y), v = _v === 'v';
-                $kaistBlockers[parseInt($activeObj.split('_')[1])].position = v ? [x, y] : [y, x];
-                $kaistBlockers[parseInt($activeObj.split('_')[1])].vertical = v;
+                if (round % 2) {
+                    $kaistBlockers[parseInt($activeObj.split('_')[1])].position = v ? [x, y] : [y, x];
+                    $kaistBlockers[parseInt($activeObj.split('_')[1])].vertical = v;
+                } else {
+                    $postechBlockers[parseInt($activeObj.split('_')[1])].position = v ? [x, y] : [y, x];
+                    $postechBlockers[parseInt($activeObj.split('_')[1])].vertical = v;
+                }
                 nextTurn();
             }
         }
         if (action === 'turn') {
+            const [_, _y, _x] = $selectedObj.split('_');
+            let x = parseInt(_x), y = parseInt(_y);
+            $kaistBlockers = rotate($kaistBlockers, x, y);
+            $postechBlockers = rotate($postechBlockers, x, y);
             nextTurn();
         }
     }
 
     $: {
-        if(!manual) nextTurn()
+        if (!manual) nextTurn()
     }
 
     async function nextTurn() {
@@ -124,7 +348,7 @@
         ++cnt;
         if (!manual) {
             load = false;
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 10));
             if (cnt === 1) {
                 $postechBlockers[0].position = [7, 7];
                 $postechBlockers[0].vertical = false;
@@ -159,13 +383,19 @@
     border-radius: 5px;
     padding: 10px;
     background: #00000055;
-    color: white;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
 
+    &, & * {
+      color: white;
+    }
+
     &:hover, &.active {
       background: #ffffff55;
-      color: #000;
+
+      &, & * {
+        color: #000;
+      }
     }
   }
 
@@ -177,6 +407,12 @@
     &.hide {
       opacity: 0;
       pointer-events: none;
+    }
+
+    &.credit {
+      bottom: 20px;
+      left: 20px;
+      cursor: initial;
     }
 
     &.back {
@@ -264,11 +500,11 @@
       on:click={handleClick}>
     <Canvas let:sti w={clientWidth} h={clientHeight} bind:this={ctx}>
         <Scene {sti} let:scene id="scene1" props={{ background: 0x000000, fog }}>
-            {#each $kaistBlockers as {position, vertical, id} (id)}
-                <Blocker {scene} {position} {vertical} kaist id={'k_'+id}></Blocker>
+            {#each $kaistBlockers as {position, vertical, length, id} (id)}
+                <Blocker {scene} {position} {vertical} {length} kaist id={'k_'+id}}></Blocker>
             {/each}
-            {#each $postechBlockers as {position, vertical, id} (id)}
-                <Blocker {scene} {position} {vertical} postech id={'p_'+id}></Blocker>
+            {#each $postechBlockers as {position, vertical, length, id} (id)}
+                <Blocker {scene} {position} {vertical} {length} postech id={'p_'+id}></Blocker>
             {/each}
             <Board {scene} active={!dragged} {cursor}/>
         </Scene>
@@ -279,6 +515,10 @@
                 config={{ antialias: true, alpha: true }}
                 shadowmap/>
     </Canvas>
+
+    <div class="toolbar credit button">
+        Made with <span>❤</span> by <a href="https://seo-rii.github.io">@seo-rii</a>
+    </div>
 
     <div class="toolbar back button" class:hide={!dragged}>
         아무 곳이나 눌러서 게임으로 돌아가기
