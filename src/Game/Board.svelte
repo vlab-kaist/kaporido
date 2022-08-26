@@ -27,7 +27,7 @@
     export let scene, active, cursor;
 
     $: {
-        cameraPosition = [7 * Math.exp(-$cameraZ) * Math.cos($rotation) + 0.2, -9 + 12 * Math.exp(0.5 * Math.sin($cameraZ)), 7 * Math.exp(-$cameraZ) * Math.sin($rotation)]
+        cameraPosition = [7 * Math.exp(-$cameraZ) * Math.cos($rotation) + 0.2, -7.5 + 12 * Math.exp(0.5 * Math.sin($cameraZ)), 7 * Math.exp(-$cameraZ) * Math.sin($rotation)]
     }
 
     $: {

@@ -106,11 +106,11 @@
             let [_, _y, _x] = $selectedObj.split('_')
             let x = parseInt(_x), y = parseInt(_y)
             if (round % 2) {
-                if ((kaistPosition[0] - 1 === x && kaistPosition[1] === y) || (kaistPosition[0] + 1 === x && kaistPosition[1] === y) || (kaistPosition[0] === x && kaistPosition[1] - 1 === y) || (kaistPosition[0] === x && kaistPosition[1] + 1 === y)) {
+                if (((kaistPosition[0] - 1 === x && kaistPosition[1] === y) || (kaistPosition[0] + 1 === x && kaistPosition[1] === y) || (kaistPosition[0] === x && kaistPosition[1] - 1 === y) || (kaistPosition[0] === x && kaistPosition[1] + 1 === y) && (postechPosition[0] !== x || postechPosition[1] !== y))) {
                     $currentObj = [`b_${y}_${x}`]
                 } else $currentObj = []
             } else {
-                if ((postechPosition[0] - 1 === x && postechPosition[1] === y) || (postechPosition[0] + 1 === x && postechPosition[1] === y) || (postechPosition[0] === x && postechPosition[1] - 1 === y) || (postechPosition[0] === x && postechPosition[1] + 1 === y)) {
+                if (((postechPosition[0] - 1 === x && postechPosition[1] === y) || (postechPosition[0] + 1 === x && postechPosition[1] === y) || (postechPosition[0] === x && postechPosition[1] - 1 === y) || (postechPosition[0] === x && postechPosition[1] + 1 === y)) && (kaistPosition[0] !== x || kaistPosition[1] !== y)) {
                     $currentObj = [`b_${y}_${x}`]
                 } else $currentObj = []
             }
