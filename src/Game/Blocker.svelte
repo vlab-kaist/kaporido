@@ -99,7 +99,7 @@
             scale={[placeMargin + placeSize * length + 0.02, 0.52, placeMargin + 0.02]}
             castShadow
             receiveShadow/>
-{:else if $currentObj.includes(id) || (place && $selectedObj === id)}
+{:else if $currentObj.includes(id)}
     <Mesh
             {scene}
             geometry={blockerGeometry}

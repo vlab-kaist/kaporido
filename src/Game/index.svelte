@@ -124,11 +124,47 @@
         return false;
     }
 
+    function validBlock(blocks, v, x, y) {
+        for (const i of blocks) {
+            if (i.vertical && v) {
+                if (i.position[0] === x) {
+                    if (y <= i.position[1] && y + 1 >= i.position[1]) return false;
+                    if (i.position[1] <= y && i.position[1] + i.length - 1 >= y) return false;
+                }
+            } else if (!i.vertical && !v) {
+                if (i.position[1] === y) {
+                    if (x <= i.position[0] && x + 1 >= i.position[0]) return false;
+                    if (i.position[0] <= x && i.position[0] + i.length - 1 >= x) return false;
+                }
+            } else if (i.length === 2) {
+                if (i.vertical && !v) {
+                    if (i.position[0] - 1 === x && i.position[1] + 1 === y) return false;
+                } else {
+                    console.log(i.position, x, y)
+                    if (i.position[0] + 1 === x && i.position[1] - 1 === y) return false;
+                }
+            }
+        }
+        return true;
+    }
+
     $: {
-        if (action === 'block' && !$activeObj) {
-            if (round % 2 && usedKaist.has($selectedObj)) $currentObj = [];
-            else if (!(round % 2) && usedPostech.has($selectedObj)) $currentObj = [];
-            else $currentObj = [$selectedObj];
+        if (action === 'block' && $selectedObj) {
+            if (!$activeObj) {
+                if (round % 2 && usedKaist.has($selectedObj)) $currentObj = [];
+                else if (!(round % 2) && usedPostech.has($selectedObj)) $currentObj = [];
+                else $currentObj = [$selectedObj];
+            } else {
+                const [_, _v, _x, _y] = $selectedObj.split('_');
+                let x = parseInt(_x), y = parseInt(_y), v = _v === 'v';
+                if (!v) {
+                    let t = x;
+                    x = y;
+                    y = t;
+                }
+                if (validBlock($kaistBlockers, v, x, y) && validBlock($postechBlockers, v, x, y)) $currentObj = [$selectedObj];
+                else $currentObj = [];
+            }
         }
         if (action === 'turn' && $selectedObj) {
             let [_, _x, _y] = $selectedObj.split('_')
