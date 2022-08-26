@@ -9,7 +9,7 @@
     import {tweened} from "svelte/motion";
     import {mapPlaceCount, mapSize, placeMargin, placePadding, placeSize, blockerCount} from "./position";
     import atmosphereMaterial from "../lib/atmosphereMaterial";
-    import {selectedObj, activeObj} from './store'
+    import {currentObj, activeObj, selectedObj} from './store'
 
     export let scene, position = [0, 0], vertical = true, kaist, postech, id, place, length = 2;
 
@@ -99,7 +99,7 @@
             scale={[placeMargin + placeSize * length + 0.02, 0.52, placeMargin + 0.02]}
             castShadow
             receiveShadow/>
-{:else if $selectedObj === id}
+{:else if $currentObj.includes(id) || (place && $selectedObj === id)}
     <Mesh
             {scene}
             geometry={blockerGeometry}

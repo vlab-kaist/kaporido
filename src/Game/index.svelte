@@ -95,12 +95,19 @@
     }
 
     $: {
+        if (action === 'block' && !$activeObj) {
+            if (round % 2 && usedKaist.has($selectedObj)) $currentObj = [];
+            else if (!(round % 2) && usedPostech.has($selectedObj)) $currentObj = [];
+            else $currentObj = [$selectedObj];
+        }
         if (action === 'turn' && $selectedObj) {
             let [_, _x, _y] = $selectedObj.split('_')
             let x = parseInt(_x), y = parseInt(_y)
-            if (x === mapPlaceCount - 1) x--;
-            if (y === mapPlaceCount - 1) y--;
-            $currentObj = [`b_${x}_${y}`, `b_${x + 1}_${y}`, `b_${x}_${y + 1}`, `b_${x + 1}_${y + 1}`]
+            x = Math.min(x, mapPlaceCount - 4)
+            y = Math.min(y, mapPlaceCount - 4)
+            let _curr = []
+            for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) _curr.push(`b_${x + i}_${y + j}`)
+            $currentObj = _curr
         }
         if (action === 'move' && $selectedObj) {
             let [_, _y, _x] = $selectedObj.split('_')
@@ -333,6 +340,7 @@
     function handleClick() {
         if (!$selectedObj || !click) return;
         if (action === 'block') {
+            if (!$currentObj.length) return;
             if (!$activeObj) $activeObj = $selectedObj;
             else {
                 const [_, _v, _x, _y] = $selectedObj.split('_');
@@ -340,9 +348,13 @@
                 if (round % 2) {
                     $kaistBlockers[parseInt($activeObj.split('_')[1])].position = v ? [x, y] : [y, x];
                     $kaistBlockers[parseInt($activeObj.split('_')[1])].vertical = v;
+                    usedKaist.add($activeObj);
+                    usedKaist.add($activeObj + '_');
                 } else {
                     $postechBlockers[parseInt($activeObj.split('_')[1])].position = v ? [x, y] : [y, x];
                     $postechBlockers[parseInt($activeObj.split('_')[1])].vertical = v;
+                    usedPostech.add($activeObj);
+                    usedKaist.add($activeObj + '_');
                 }
                 nextTurn();
             }

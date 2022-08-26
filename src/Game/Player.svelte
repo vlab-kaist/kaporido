@@ -12,12 +12,12 @@
     const cylinderMaterial = new MeshPhongMaterial();
 
     export let scene, position, kaist, postech;
-    let pos = [0, 0, 0];
+    let pos = [0, 0.22, 0];
 
     function getPosition(x, y, z = 0) {
         return [
             (y - mapPlaceCount / 2 + 0.5) * placePadding,
-            z,
+            z + 0.22,
             (x - mapPlaceCount / 2 + 0.5) * placePadding
         ]
     }
@@ -39,5 +39,5 @@
 <Mesh
         {scene} castShadow receiveShadow geometry={cylinderGeometry} material={cylinderMaterial}
         pos={[$_pos1, $_pos2, $_pos3]}
-        scale={[placeSize, placeSize / 2, placeSize]}
+        scale={[placeSize, 0.01, placeSize]}
         mat={{ color: kaist?0x2d8ad6:0xed4434 }}/>
