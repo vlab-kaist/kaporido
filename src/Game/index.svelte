@@ -94,6 +94,36 @@
         if (action === 'turn') $selectable = 'b';
     }
 
+    function blocked(blocker, pos, x, y) {
+        for (const i of blocker) {
+            if (pos[0] - 1 === x) {
+                if (i.position[0] === pos[0] && i.position[1] === pos[1] && i.vertical) return true;
+                if (i.position[0] === pos[0] && i.position[1] === pos[1] - 1 && i.length === 2 && i.vertical) return true;
+            } else if (pos[0] + 1 === x) {
+                if (i.position[0] === pos[0] + 1 && i.position[1] === pos[1] && i.vertical) return true;
+                if (i.position[0] === pos[0] + 1 && i.position[1] === pos[1] + 1 && i.length === 2 && i.vertical) return true;
+            } else if (pos[1] - 1 === y) {
+                if (i.position[0] === pos[0] && i.position[1] === pos[1] && !i.vertical) return true;
+                if (i.position[0] === pos[0] - 1 && i.position[1] === pos[1] && i.length === 2 && !i.vertical) return true;
+            } else if (pos[1] + 1 === y) {
+                if (i.position[0] === pos[0] && i.position[1] === pos[1] + 1 && !i.vertical) return true;
+                if (i.position[0] === pos[0] - 1 && i.position[1] === pos[1] + 1 && i.length === 2 && !i.vertical) return true;
+            }
+        }
+        return false
+    }
+
+    function validMove(pos, x, y) {
+        if ((pos[0] - 1 === x && pos[1] === y) || (pos[0] + 1 === x && pos[1] === y) || (pos[0] === x && pos[1] - 1 === y) || (pos[0] === x && pos[1] + 1 === y)) {
+            if (kaistPosition[0] === x && kaistPosition[1] === y) return false;
+            if (postechPosition[0] === x && postechPosition[1] === y) return false;
+            if (blocked($kaistBlockers, pos, x, y)) return false;
+            if (blocked($postechBlockers, pos, x, y)) return false;
+            return true;
+        }
+        return false;
+    }
+
     $: {
         if (action === 'block' && !$activeObj) {
             if (round % 2 && usedKaist.has($selectedObj)) $currentObj = [];
@@ -112,15 +142,8 @@
         if (action === 'move' && $selectedObj) {
             let [_, _y, _x] = $selectedObj.split('_')
             let x = parseInt(_x), y = parseInt(_y)
-            if (round % 2) {
-                if (((kaistPosition[0] - 1 === x && kaistPosition[1] === y) || (kaistPosition[0] + 1 === x && kaistPosition[1] === y) || (kaistPosition[0] === x && kaistPosition[1] - 1 === y) || (kaistPosition[0] === x && kaistPosition[1] + 1 === y) && (postechPosition[0] !== x || postechPosition[1] !== y))) {
-                    $currentObj = [`b_${y}_${x}`]
-                } else $currentObj = []
-            } else {
-                if (((postechPosition[0] - 1 === x && postechPosition[1] === y) || (postechPosition[0] + 1 === x && postechPosition[1] === y) || (postechPosition[0] === x && postechPosition[1] - 1 === y) || (postechPosition[0] === x && postechPosition[1] + 1 === y)) && (kaistPosition[0] !== x || kaistPosition[1] !== y)) {
-                    $currentObj = [`b_${y}_${x}`]
-                } else $currentObj = []
-            }
+            if (validMove((round % 2) ? kaistPosition : postechPosition, x, y)) $currentObj = [`b_${y}_${x}`]
+            else $currentObj = []
         }
     }
 
