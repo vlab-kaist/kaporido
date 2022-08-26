@@ -3,8 +3,8 @@
         CylinderGeometry,
         MeshPhongMaterial,
         Mesh
-    } from "https://unpkg.com/svelthree@latest/dist/svelthree.mjs";
-    import {blockerCount, mapPlaceCount, mapSize, placePadding, placeSize} from './position'
+    } from "svelthree";
+    import {mapPlaceCount, placePadding, placeSize} from './position'
     import {tweened} from "svelte/motion";
     import {cubicInOut, quintOut} from "svelte/easing";
 

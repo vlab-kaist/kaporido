@@ -4,12 +4,12 @@
         MeshPhongMaterial,
         Mesh,
         PointLight
-    } from "https://unpkg.com/svelthree@latest/dist/svelthree.mjs";
+    } from "svelthree";
     import {cubicInOut, quintOut} from "svelte/easing";
     import {tweened} from "svelte/motion";
     import {mapPlaceCount, mapSize, placeMargin, placePadding, placeSize, blockerCount} from "./position";
     import atmosphereMaterial from "../lib/atmosphereMaterial";
-    import {currentObj, activeObj, selectedObj} from './store'
+    import {currentObj, activeObj} from './store'
 
     export let scene, position = [0, 0], vertical = true, kaist, postech, id, place, length = 2;
 
@@ -87,7 +87,7 @@
         {scene} castShadow receiveShadow name={id} geometry={blockerGeometry} material={blockerMaterial}
         pos={[$_pos1, $_pos2, $_pos3]} rot={[$_rot1, $_rot2, $_rot3]}
         scale={[placeMargin + placeSize * length, kaist?0.51:0.5, placeMargin]}
-        mat={{ color: kaist?0x2d8ad6:0xed4434 }}/>
+        mat={{ color: kaist?0x2d8ad6:0xed4434 }} animation={null}/>
 
 {#if $activeObj === id}
     <Mesh

@@ -15,7 +15,7 @@
         PlaneBufferGeometry,
         Vector2,
         Raycaster,
-    } from "https://unpkg.com/svelthree@latest/dist/svelthree.mjs";
+    } from "svelthree";
     import {_cameraP1, _cameraP2, _cameraP3, cameraZ, rotation, selectedObj} from "./store.js";
     import {mapPlaceCount, placePadding, placeSize, mapSize, containerWidth, containerHeight} from "./position";
     import atmosphereMaterial from "../lib/atmosphereMaterial";

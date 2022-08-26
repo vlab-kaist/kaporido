@@ -1,4 +1,4 @@
-import {ShaderMaterial, Color} from "https://unpkg.com/svelthree@latest/dist/svelthree.mjs";
+import {ShaderMaterial, Color} from "svelthree";
 
 export default function (color) {
     const vertexShader = [

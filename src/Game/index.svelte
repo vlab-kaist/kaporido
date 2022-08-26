@@ -2,10 +2,9 @@
     import {
         Canvas,
         Scene,
-        BoxBufferGeometry,
         WebGLRenderer,
         Fog,
-    } from "https://unpkg.com/svelthree@latest/dist/svelthree.mjs";
+    } from "svelthree";
     import Board from "./Board.svelte";
     import Blocker from "./Blocker.svelte";
     import Player from "./Player.svelte";
@@ -39,7 +38,7 @@
                     position: [i, -2.2],
                     vertical: true,
                     length: 2,
-                    id: i,
+                    id: 'k_' + i,
                 });
             }
             $kaistBlockers = temp;
@@ -52,7 +51,7 @@
                     position: [i, mapPlaceCount + 0.2],
                     vertical: true,
                     length: 2,
-                    id: blockerCount - i - 1,
+                    id: 'p_' + (blockerCount - i - 1),
                 });
             }
             $postechBlockers = temp;
@@ -140,7 +139,6 @@
                 if (i.vertical && !v) {
                     if (i.position[0] - 1 === x && i.position[1] + 1 === y) return false;
                 } else {
-                    console.log(i.position, x, y)
                     if (i.position[0] + 1 === x && i.position[1] - 1 === y) return false;
                 }
             }
@@ -220,7 +218,7 @@
         return [...blockers, ..._k];
     }
 
-    function handleClick() {
+    async function handleClick() {
         if (!$selectedObj || !click) return;
         if (action === 'block') {
             if (!$currentObj.length) return;
@@ -229,13 +227,16 @@
                 const [_, _v, _x, _y] = $selectedObj.split('_');
                 let x = parseInt(_x), y = parseInt(_y), v = _v === 'v';
                 if (round % 2) {
-                    $kaistBlockers[parseInt($activeObj.split('_')[1])].position = v ? [x, y] : [y, x];
-                    $kaistBlockers[parseInt($activeObj.split('_')[1])].vertical = v;
+                    const idx = $kaistBlockers.findIndex(e => e.id === $activeObj);
+                    $kaistBlockers[idx].position = v ? [x, y] : [y, x];
+                    $kaistBlockers[idx].vertical = v;
                     usedKaist.add($activeObj);
                     usedKaist.add($activeObj + '_');
                 } else {
-                    $postechBlockers[parseInt($activeObj.split('_')[1])].position = v ? [x, y] : [y, x];
-                    $postechBlockers[parseInt($activeObj.split('_')[1])].vertical = v;
+                    const idx = $postechBlockers.findIndex(e => e.id === $activeObj);
+                    console.log(idx)
+                    $postechBlockers[idx].position = v ? [x, y] : [y, x];
+                    $postechBlockers[idx].vertical = v;
                     usedPostech.add($activeObj);
                     usedKaist.add($activeObj + '_');
                 }
@@ -247,6 +248,15 @@
             let x = parseInt(_x), y = parseInt(_y);
             x = Math.min(x, mapPlaceCount - 4)
             y = Math.min(y, mapPlaceCount - 4)
+            let removeBlock = (round % 2) ? $kaistBlockers : $postechBlockers;
+            for (let k = 0; k < 2; k++) {
+                for (let i = 0; i < removeBlock.length; i++) {
+                    if (removeBlock[i].position[1] < 0 || removeBlock[i].position[1] > mapPlaceCount) {
+                        removeBlock.splice(i, 1);
+                        break;
+                    }
+                }
+            }
             $kaistBlockers = rotate($kaistBlockers, x, y);
             $postechBlockers = rotate($postechBlockers, x, y);
             nextTurn();
@@ -289,7 +299,14 @@
         setTimeout(() => {
             round++;
             load = true;
-        }, 2000)
+        }, 200)
+    }
+
+    let turnable, blockable;
+    $: {
+        const left = (round % 2 ? $kaistBlockers : $postechBlockers).filter(i => i.position[1] < 0 || i.position[1] > mapPlaceCount).length;
+        turnable = left >= 2;
+        blockable = left >= 1;
     }
 </script>
 
@@ -423,10 +440,10 @@
     <Canvas let:sti w={clientWidth} h={clientHeight} bind:this={ctx}>
         <Scene {sti} let:scene id="scene1" props={{ background: 0x000000, fog }}>
             {#each $kaistBlockers as {position, vertical, length, id} (id)}
-                <Blocker {scene} {position} {vertical} {length} kaist id={'k_'+id}}></Blocker>
+                <Blocker {scene} {position} {vertical} {length} kaist {id}></Blocker>
             {/each}
-            {#each $postechBlockers as {position, vertical, length, id} (id)}
-                <Blocker {scene} {position} {vertical} {length} postech id={'p_'+id}></Blocker>
+            {#each $postechBlockers as {position, vertical, length, hide, id} (id)}
+                <Blocker {scene} {position} {vertical} {length} postech {id}></Blocker>
             {/each}
             <Board {scene} active={!dragged} {cursor}/>
             <Player {scene} kaist position={kaistPosition}/>
@@ -458,8 +475,12 @@
 
     <div class="toolbar action" class:hide={dragged || !load || !manual}>
         <span class="button" class:active={action==='move'} on:click={()=>(action='move')}>말 이동하기</span>
-        <span class="button" class:active={action==='block'} on:click={()=>(action='block')}>블록 놓기</span>
-        <span class="button" class:active={action==='turn'} on:click={()=>(action='turn')}>판 돌리기</span>
+        {#if blockable}
+            <span class="button" class:active={action==='block'} on:click={()=>(action='block')}>블록 놓기</span>
+        {/if}
+        {#if turnable}
+            <span class="button" class:active={action==='turn'} on:click={()=>(action='turn')}>판 돌리기</span>
+        {/if}
     </div>
 
     <div class="toolbar turn" class:hide={dragged}>
