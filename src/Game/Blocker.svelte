@@ -26,8 +26,8 @@
         ]
     }
 
-    let pos = getPosition(position[0], position[1]), rot = [0, vertical ? 0 : Math.PI / 2, 0];
-    let lastPosition = position, lastVertical = vertical;
+    let pos = getPosition(position[0], position[1], 4), rot = [0, vertical ? 0 : Math.PI / 2, 0];
+    let lastPosition = null, lastVertical = vertical;
 
     let blockerGeometry = new BoxBufferGeometry(1, 1, 1);
     const blockerMaterial = new MeshPhongMaterial({opacity: place ? 0 : 1, transparent: place});
@@ -44,7 +44,7 @@
 
     $: {
         if (position != lastPosition) {
-            pos = getPosition((lastPosition[0] * 2 + position[0]) / 3, (lastPosition[1] * 2 + position[1]) / 3, 4);
+            if (lastPosition) pos = getPosition((lastPosition[0] * 2 + position[0]) / 3, (lastPosition[1] * 2 + position[1]) / 3, 4);
             setTimeout(() => {
                 pos = getPosition(position[0], position[1], 4);
                 lastPosition = position;

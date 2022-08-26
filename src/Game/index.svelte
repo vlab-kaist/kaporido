@@ -275,6 +275,8 @@
         if (!manual) nextTurn()
     }
 
+    let winner = '';
+
     async function nextTurn() {
         action = ''
         ++cnt;
@@ -295,11 +297,14 @@
                 $postechBlockers[2].vertical = false;
             }
         }
-
-        setTimeout(() => {
+        if (postechPosition[1] === 0) {
+            winner = '포스텍';
+        } else if (kaistPosition[1] === mapPlaceCount - 1) {
+            winner = '카이스트';
+        } else setTimeout(() => {
             round++;
             load = true;
-        }, 200)
+        }, 2000)
     }
 
     let turnable, blockable;
@@ -369,6 +374,28 @@
     &.next {
       bottom: 20px;
       right: 20px;
+    }
+
+    &.winner {
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: #00000055;
+      backdrop-filter: blur(5px);
+      transition: all 0.2s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      & > * {
+        margin: 10px;
+      }
+
+      &, & * {
+        color: white;
+      }
     }
 
     &.action {
@@ -492,5 +519,11 @@
             <img src="https://w.namu.la/s/006a9fbc14a31c4be81260b185c92483c23c35aac49903a99e6ff20f3e7556fbba9cf64c357da20fa50794492d3658349494db25efba04ab03a91ae9179ec5512d9d7be9d3266304fdf2d5cdd108b1aa2435b0d31feb62fcf5647619f09e372a"/>
             <span>POSTECH</span>
         </div>
+    </div>
+
+    <div class="toolbar winner" class:hide={!winner}>
+        <h1>{winner}의 승리!</h1>
+        <h3>{winner}이(가) 승리했어요.</h3>
+        <div class="button" on:click={()=>location.reload()}>다시 플레이</div>
     </div>
 </main>
