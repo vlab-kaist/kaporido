@@ -8,4 +8,4 @@ export const placePadding = mapSize / mapPlaceCount;
 export const placeSize = (mapSize - 0.8) / mapPlaceCount;
 export const placeMargin = 0.8 / mapPlaceCount
 
-export const blockerCount = 12;
+export const blockerCount = 10;

@@ -11,3 +11,7 @@ export const _cameraP1 = tweened(0, {duration: 2000, easing: expoOut}),
 
 export const kaistBlockers = writable([]);
 export const postechBlockers = writable([]);
+export const selectedObj = writable('');
+export const currentObj = writable([]);
+export const activeObj = writable('');
+export const selectable = writable('');

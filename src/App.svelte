@@ -4,6 +4,7 @@
 </script>
 
 <style lang="scss">
+  @import url(//spoqa.github.io/spoqa-han-sans/css/SpoqaHanSansNeo.css);
   :global(body, html, #app) {
     margin: 0;
     padding: 0;
@@ -16,8 +17,14 @@
     width: 100%;
     height: 100%;
   }
+
+  * { font-family: 'Spoqa Han Sans Neo', 'sans-serif'; }
 </style>
 
 <main>
     <Game/>
 </main>
+
+<svelte:head>
+    <title>"카"포전</title>
+</svelte:head>
