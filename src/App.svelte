@@ -26,5 +26,5 @@
 </main>
 
 <svelte:head>
-    <title>"카"포전</title>
+    <title>카포리도</title>
 </svelte:head>
