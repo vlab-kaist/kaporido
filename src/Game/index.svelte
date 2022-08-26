@@ -8,6 +8,7 @@
     } from "https://unpkg.com/svelthree@latest/dist/svelthree.mjs";
     import Board from "./Board.svelte";
     import Blocker from "./Blocker.svelte";
+    import Player from "./Player.svelte";
     import {onDestroy, onMount} from "svelte";
     import {
         rotation,
@@ -19,7 +20,8 @@
         selectedObj,
         currentObj
     } from "./store.js";
-    import {blockerCount, mapPlaceCount, mapSize} from "./position";
+    import {blockerCount, mapPlaceCount} from "./position";
+    import nupjukImage from '../nupjuk.png'
 
     const fog = new Fog(0x000000, 0.1, 1);
 
@@ -70,7 +72,9 @@
         $cameraZ = 0;
     }
 
-    let cnt = 0, action, usedKaist = 0, usedPostech = 0;
+    let cnt = 0, action, usedKaist = new Set(), usedPostech = new Set(),
+        kaistPosition = [Math.floor(mapPlaceCount / 2), 0],
+        postechPosition = [Math.floor(mapPlaceCount / 2), mapPlaceCount - 1];
     $: manual = true;
 
     $: {
@@ -82,7 +86,7 @@
     }
 
     $: {
-        if (action === 'move') $selectable = 'm';
+        if (action === 'move') $selectable = 'b';
         if (action === 'block') {
             if (!$activeObj) $selectable = round % 2 ? 'k' : 'p';
             else $selectable = 'c';
@@ -97,6 +101,19 @@
             if (x === mapPlaceCount - 1) x--;
             if (y === mapPlaceCount - 1) y--;
             $currentObj = [`b_${x}_${y}`, `b_${x + 1}_${y}`, `b_${x}_${y + 1}`, `b_${x + 1}_${y + 1}`]
+        }
+        if (action === 'move' && $selectedObj) {
+            let [_, _y, _x] = $selectedObj.split('_')
+            let x = parseInt(_x), y = parseInt(_y)
+            if (round % 2) {
+                if ((kaistPosition[0] - 1 === x && kaistPosition[1] === y) || (kaistPosition[0] + 1 === x && kaistPosition[1] === y) || (kaistPosition[0] === x && kaistPosition[1] - 1 === y) || (kaistPosition[0] === x && kaistPosition[1] + 1 === y)) {
+                    $currentObj = [`b_${y}_${x}`]
+                } else $currentObj = []
+            } else {
+                if ((postechPosition[0] - 1 === x && postechPosition[1] === y) || (postechPosition[0] + 1 === x && postechPosition[1] === y) || (postechPosition[0] === x && postechPosition[1] - 1 === y) || (postechPosition[0] === x && postechPosition[1] + 1 === y)) {
+                    $currentObj = [`b_${y}_${x}`]
+                } else $currentObj = []
+            }
         }
     }
 
@@ -337,6 +354,14 @@
             $postechBlockers = rotate($postechBlockers, x, y);
             nextTurn();
         }
+        if (action === 'move') {
+            if (!$currentObj.length) return;
+            const [_, _y, _x] = $selectedObj.split('_');
+            let x = parseInt(_x), y = parseInt(_y);
+            if (round % 2) kaistPosition = [x, y];
+            else postechPosition = [x, y];
+            nextTurn();
+        }
     }
 
     $: {
@@ -507,6 +532,8 @@
                 <Blocker {scene} {position} {vertical} {length} postech id={'p_'+id}></Blocker>
             {/each}
             <Board {scene} active={!dragged} {cursor}/>
+            <Player {scene} kaist position={kaistPosition}/>
+            <Player {scene} postech position={postechPosition}/>
         </Scene>
         <WebGLRenderer
                 {sti}
@@ -540,7 +567,7 @@
 
     <div class="toolbar turn" class:hide={dragged}>
         <div class:active={round % 2} style="background: #1487C888;">
-            <img src="/src/nupjuk.png"/>
+            <img src={nupjukImage}/>
             <span>KAIST</span>
         </div>
         <div class:active={(round + 1) % 2} style="background: #C8015088;">
