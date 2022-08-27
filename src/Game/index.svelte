@@ -81,7 +81,7 @@
         if (gameType === 'p2e') manual = round % 2;
     }
     $: if (gameType && gameType !== 'p2p' && !server) {
-        server = new Server('ws://localhost:5500/game');
+        server = new Server('wss://kaporido-rucjbkhl7a-du.a.run.app/game', () => (error = true));
     }
 
     $: {
@@ -293,7 +293,7 @@
         if (!manual && gameType === 'p2e') nextTurn()
     }
 
-    let winner = '', usedPostechC = 0;
+    let winner = '', usedPostechC = 0, error = null;
 
     async function nextTurn(timeout = 1800) {
         action = ''
@@ -568,7 +568,13 @@
         <h3>{winner}이(가) 승리했어요.</h3>
         <div style="display: flex;flex-direction: row">
             <div class="button" style="margin: 0 5px;" on:click={()=>location.reload()}>다시 플레이</div>
-            <div class="button" style="margin: 0 5px;" on:click={()=>location.reload()}>기보 보기</div>
+        </div>
+    </div>
+
+    <div class="toolbar fullscreen" class:hide={!winner}>
+        <h1>오류가 발생했어요.</h1>
+        <div style="display: flex;flex-direction: row">
+            <div class="button" style="margin: 0 5px;" on:click={()=>location.reload()}>다시 플레이</div>
         </div>
     </div>
 
@@ -582,10 +588,6 @@
             <div class="button" style="margin: 0 5px;" on:click={()=>{
                 gameType = 'p2e';
             }}>1 vs AI
-            </div>
-            <div class="button" style="margin: 0 5px;" on:click={()=>{
-                gameType = 'replay';
-            }}>기보 플레이
             </div>
         </div>
     </div>
