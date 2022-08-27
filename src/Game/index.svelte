@@ -8,7 +8,7 @@
     import Board from "./Board.svelte";
     import Blocker from "./Blocker.svelte";
     import Player from "./Player.svelte";
-    import {onDestroy, onMount} from "svelte";
+    import {onDestroy, onMount, tick} from "svelte";
     import {
         rotation,
         cameraZ,
@@ -21,11 +21,12 @@
     } from "./store.js";
     import {blockerCount, mapPlaceCount} from "./position";
     import nupjukImage from '../nupjuk.png'
+    import Server from "../lib/ws";
 
     const fog = new Fog(0x000000, 0.1, 1);
 
-    let clientWidth, clientHeight, ctx, round = 0, click = false, drag = false, dragged = false, lastX, lastY, initX,
-        initY, load = true, cursor, manual = false;
+    let clientWidth, clientHeight, ctx, round = -1, click = false, drag = false, dragged = false, lastX, lastY, initX,
+        initY, load = true, cursor, manual = false, gameType = '', server: Server;
 
     onMount(() => {
         window.addEventListener("resize", onResize);
@@ -74,7 +75,14 @@
     let cnt = 0, action, usedKaist = new Set(), usedPostech = new Set(),
         kaistPosition = [Math.floor(mapPlaceCount / 2), 0],
         postechPosition = [Math.floor(mapPlaceCount / 2), mapPlaceCount - 1];
-    $: manual = true;
+    $: {
+        manual = true;
+        if (gameType === 'p2p') manual = true;
+        if (gameType === 'p2e') manual = round % 2;
+    }
+    $: if (gameType && gameType !== 'p2p' && !server) {
+        server = new Server('ws://localhost:5500/game');
+    }
 
     $: {
         let _ = action;
@@ -218,7 +226,9 @@
         return [...blockers, ..._k];
     }
 
-    async function handleClick() {
+    let lastAction = ' ';
+
+    async function handleClick(next = true) {
         if (!$selectedObj || !click) return;
         if (action === 'block') {
             if (!$currentObj.length) return;
@@ -234,13 +244,15 @@
                     usedKaist.add($activeObj + '_');
                 } else {
                     const idx = $postechBlockers.findIndex(e => e.id === $activeObj);
-                    console.log(idx)
                     $postechBlockers[idx].position = v ? [x, y] : [y, x];
                     $postechBlockers[idx].vertical = v;
                     usedPostech.add($activeObj);
                     usedKaist.add($activeObj + '_');
                 }
-                nextTurn();
+                if (next) {
+                    lastAction = v ? `2 ${mapPlaceCount - x - 1} ${y}` : `1 ${mapPlaceCount - y - 2} ${x - 1}`;
+                    nextTurn();
+                }
             }
         }
         if (action === 'turn') {
@@ -259,7 +271,10 @@
             }
             $kaistBlockers = rotate($kaistBlockers, x, y);
             $postechBlockers = rotate($postechBlockers, x, y);
-            nextTurn();
+            if (next) {
+                lastAction = `3 ${mapPlaceCount - x - 4} ${y}`;
+                nextTurn();
+            }
         }
         if (action === 'move') {
             if (!$currentObj.length) return;
@@ -267,36 +282,63 @@
             let x = parseInt(_x), y = parseInt(_y);
             if (round % 2) kaistPosition = [x, y];
             else postechPosition = [x, y];
-            nextTurn();
+            if (next) {
+                lastAction = `0 ${mapPlaceCount - x - 1} ${y}`;
+                nextTurn(800);
+            }
         }
     }
 
     $: {
-        if (!manual) nextTurn()
+        if (!manual && gameType === 'p2e') nextTurn()
     }
 
-    let winner = '';
+    let winner = '', usedPostechC = 0;
 
-    async function nextTurn() {
+    async function nextTurn(timeout = 1800) {
         action = ''
         ++cnt;
+        server.send(lastAction);
+        lastAction = ' ';
         if (!manual) {
             load = false;
-            await new Promise(resolve => setTimeout(resolve, 10));
-            if (cnt === 1) {
-                $postechBlockers[0].position = [7, 7];
-                $postechBlockers[0].vertical = false;
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            const res = (await (await server.get()).next()).value.trim().split(' ').map(e => parseInt(e));
+            //const res = [0, 5, 8]
+            console.log(res)
+            if (res[0] === 0) {
+                action = 'move';
+                await tick();
+                $selectedObj = `b_${mapPlaceCount - res[2] - 1}_${res[1]}`;
+                $currentObj = [''];
             }
-
-            if (cnt === 3) {
-                $postechBlockers[1].position = [3, 2];
+            if (res[0] === 1) {
+                action = 'block';
+                await tick();
+                $activeObj = `p_${usedPostechC}`;
+                usedPostechC++;
+                $selectedObj = `c_h_${res[2] + 1}_${mapPlaceCount - res[1] - 2}`;
+                $currentObj = [''];
             }
-
-            if (cnt === 5) {
-                $postechBlockers[2].position = [2, 2];
-                $postechBlockers[2].vertical = false;
+            if (res[0] === 2) {
+                action = 'block';
+                await tick();
+                $activeObj = `p_${usedPostechC}`;
+                usedPostechC++;
+                $selectedObj = `c_v_${mapPlaceCount - res[1] - 1}_${res[2]}`;
+                $currentObj = [''];
             }
-        }
+            if (res[0] === 3) {
+                action = 'turn';
+                await tick();
+                usedPostechC++;
+                usedPostechC++;
+                $selectedObj = `b_${mapPlaceCount - res[1] - 4}_${res[2]}`;
+                $currentObj = [''];
+            }
+            handleClick(false);
+            action = '';
+        } else (await (await server.get()).next())
         if (postechPosition[1] === 0) {
             winner = '포스텍';
         } else if (kaistPosition[1] === mapPlaceCount - 1) {
@@ -304,7 +346,7 @@
         } else setTimeout(() => {
             round++;
             load = true;
-        }, 2000)
+        }, timeout)
     }
 
     let turnable, blockable;
@@ -376,7 +418,7 @@
       right: 20px;
     }
 
-    &.winner {
+    &.fullscreen {
       left: 0;
       right: 0;
       top: 0;
@@ -492,7 +534,7 @@
         아무 곳이나 눌러서 게임으로 돌아가기
     </div>
 
-    <div class="toolbar next button" class:hide={dragged || !load || manual} on:click={nextTurn}>
+    <div class="toolbar next button" class:hide={dragged || !load || manual} on:click={()=>nextTurn(1800)}>
         다음으로
     </div>
 
@@ -517,13 +559,34 @@
         </div>
         <div class:active={(round + 1) % 2} style="background: #C8015088;">
             <img src="https://w.namu.la/s/006a9fbc14a31c4be81260b185c92483c23c35aac49903a99e6ff20f3e7556fbba9cf64c357da20fa50794492d3658349494db25efba04ab03a91ae9179ec5512d9d7be9d3266304fdf2d5cdd108b1aa2435b0d31feb62fcf5647619f09e372a"/>
-            <span>POSTECH</span>
+            <span>{gameType === 'p2e' ? 'AI' : 'POSTECH'}</span>
         </div>
     </div>
 
-    <div class="toolbar winner" class:hide={!winner}>
+    <div class="toolbar fullscreen" class:hide={!winner}>
         <h1>{winner}의 승리!</h1>
         <h3>{winner}이(가) 승리했어요.</h3>
-        <div class="button" on:click={()=>location.reload()}>다시 플레이</div>
+        <div style="display: flex;flex-direction: row">
+            <div class="button" style="margin: 0 5px;" on:click={()=>location.reload()}>다시 플레이</div>
+            <div class="button" style="margin: 0 5px;" on:click={()=>location.reload()}>기보 보기</div>
+        </div>
+    </div>
+
+    <div class="toolbar fullscreen" class:hide={gameType}>
+        <h1>Puoribor</h1>
+        <div style="display: flex;flex-direction: row">
+            <div class="button" style="margin: 0 5px;" on:click={()=>{
+                gameType = 'p2p';
+            }}>1 vs 1
+            </div>
+            <div class="button" style="margin: 0 5px;" on:click={()=>{
+                gameType = 'p2e';
+            }}>1 vs AI
+            </div>
+            <div class="button" style="margin: 0 5px;" on:click={()=>{
+                gameType = 'replay';
+            }}>기보 플레이
+            </div>
+        </div>
     </div>
 </main>

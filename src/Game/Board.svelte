@@ -133,7 +133,9 @@
 
 {#each {length: mapPlaceCount + 1} as _, i}
     {#each {length: mapPlaceCount - 1} as _, j}
-        <Blocker {scene} position={[i, j]} vertical={true} place id={'c_v_'+i+'_'+j}/>
-        <Blocker {scene} position={[j, i]} vertical={false} place id={'c_h_'+i+'_'+j}/>
+        {#if i > 0 && i < mapPlaceCount}
+            <Blocker {scene} position={[i, j]} vertical={true} place id={'c_v_'+i+'_'+j}/>
+            <Blocker {scene} position={[j, i]} vertical={false} place id={'c_h_'+i+'_'+j}/>
+        {/if}
     {/each}
 {/each}
