@@ -8,6 +8,7 @@ export default class Server {
             this.buffer.push(e.data);
         }
         this.ws.onclose = onDisconnect;
+        this.ws.onerror = onDisconnect;
     }
 
     async* get() {
