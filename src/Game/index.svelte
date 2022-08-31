@@ -79,9 +79,10 @@
         manual = true;
         if (gameType === 'p2p') manual = true;
         if (gameType === 'p2e') manual = round % 2;
+        if (gameType === 'e2e') manual = false;
     }
     $: if (gameType && gameType !== 'p2p' && !server) {
-        server = new Server('wss://kaporido-rucjbkhl7a-du.a.run.app/game', () => (error = true));
+        server = new Server(`ws://localhost:5500/game/${gameType}`, () => (error = true));
     }
 
     $: {
@@ -290,20 +291,20 @@
     }
 
     $: {
-        if (!manual && gameType === 'p2e') nextTurn()
+        if (!manual && (gameType === 'p2e' || gameType === 'e2e')) nextTurn()
     }
 
-    let winner = '', usedPostechC = 0, error = null;
+    let winner = '', usedPostechC = 0, usedKaistC = 0, error = null;
 
     async function nextTurn(timeout = 1800) {
         action = ''
         ++cnt;
-        server.send(lastAction);
+        server && server.send(lastAction);
         lastAction = ' ';
         if (!manual) {
             load = false;
             await new Promise(resolve => setTimeout(resolve, 1000));
-            const res = (await (await server.get()).next()).value.trim().split(' ').map(e => parseInt(e));
+            const res = server && (await (await server.get())?.next?.()).value.trim().split(' ').map(e => parseInt(e));
             //const res = [0, 5, 8]
             console.log(res)
             if (res[0] === 0) {
@@ -315,30 +316,45 @@
             if (res[0] === 1) {
                 action = 'block';
                 await tick();
-                $activeObj = `p_${usedPostechC}`;
-                usedPostechC++;
+                if (round % 2) {
+                    $activeObj = `k_${usedKaistC}`;
+                    usedKaistC++;
+                } else {
+                    $activeObj = `p_${usedPostechC}`;
+                    usedPostechC++;
+                }
                 $selectedObj = `c_h_${res[2] + 1}_${mapPlaceCount - res[1] - 2}`;
                 $currentObj = [''];
             }
             if (res[0] === 2) {
                 action = 'block';
                 await tick();
-                $activeObj = `p_${usedPostechC}`;
-                usedPostechC++;
+                if (round % 2) {
+                    $activeObj = `k_${usedKaistC}`;
+                    usedKaistC++;
+                } else {
+                    $activeObj = `p_${usedPostechC}`;
+                    usedPostechC++;
+                }
                 $selectedObj = `c_v_${mapPlaceCount - res[1] - 1}_${res[2]}`;
                 $currentObj = [''];
             }
             if (res[0] === 3) {
                 action = 'turn';
                 await tick();
-                usedPostechC++;
-                usedPostechC++;
-                $selectedObj = `b_${mapPlaceCount - res[1] - 4}_${res[2]}`;
+                if (round % 2) {
+                    usedKaistC++;
+                    usedKaistC++;
+                } else {
+                    usedPostechC++;
+                    usedPostechC++;
+                }
+                $selectedObj = `b_${mapPlaceCount - 4 - res[1]}_${res[2]}`;
                 $currentObj = [''];
             }
             handleClick(false);
             action = '';
-        } else (await (await server.get()).next())
+        } else (await (await server?.get?.())?.next?.())
         if (postechPosition[1] === 0) {
             winner = '포스텍';
         } else if (kaistPosition[1] === mapPlaceCount - 1) {
@@ -555,11 +571,11 @@
     <div class="toolbar turn" class:hide={dragged}>
         <div class:active={round % 2} style="background: #1487C888;">
             <img src={nupjukImage}/>
-            <span>KAIST</span>
+            <span>{gameType === 'e2e' ? 'AI' : 'KAIST'}</span>
         </div>
         <div class:active={(round + 1) % 2} style="background: #C8015088;">
             <img src="https://w.namu.la/s/006a9fbc14a31c4be81260b185c92483c23c35aac49903a99e6ff20f3e7556fbba9cf64c357da20fa50794492d3658349494db25efba04ab03a91ae9179ec5512d9d7be9d3266304fdf2d5cdd108b1aa2435b0d31feb62fcf5647619f09e372a"/>
-            <span>{gameType === 'p2e' ? 'AI' : 'POSTECH'}</span>
+            <span>{gameType === 'e2e' ? 'AI' : (gameType === 'p2e' ? 'AI' : 'POSTECH')}</span>
         </div>
     </div>
 
@@ -571,7 +587,7 @@
         </div>
     </div>
 
-    <div class="toolbar fullscreen" class:hide={!winner}>
+    <div class="toolbar fullscreen" class:hide={!error}>
         <h1>오류가 발생했어요.</h1>
         <div style="display: flex;flex-direction: row">
             <div class="button" style="margin: 0 5px;" on:click={()=>location.reload()}>다시 플레이</div>
@@ -588,6 +604,10 @@
             <div class="button" style="margin: 0 5px;" on:click={()=>{
                 gameType = 'p2e';
             }}>1 vs AI
+            </div>
+            <div class="button" style="margin: 0 5px;" on:click={()=>{
+                gameType = 'e2e';
+            }}>AI vs AI
             </div>
         </div>
     </div>
