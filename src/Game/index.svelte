@@ -69,7 +69,7 @@
 
     $: {
         $rotation = round * Math.PI;
-        $cameraZ = 0;
+        $cameraZ = 0.35;
     }
 
     let cnt = 0, action, usedKaist = new Set(), usedPostech = new Set(),
@@ -310,7 +310,7 @@
             if (res[0] === 0) {
                 action = 'move';
                 await tick();
-                $selectedObj = `b_${mapPlaceCount - res[2] - 1}_${res[1]}`;
+                $selectedObj = `b_${res[2]}_${mapPlaceCount - res[1] - 1}`;
                 $currentObj = [''];
             }
             if (res[0] === 1) {
@@ -349,7 +349,7 @@
                     usedPostechC++;
                     usedPostechC++;
                 }
-                $selectedObj = `b_${mapPlaceCount - 4 - res[1]}_${res[2]}`;
+                $selectedObj = `b_${res[2]}_${mapPlaceCount - 4 - res[1]}`;
                 $currentObj = [''];
             }
             handleClick(false);
