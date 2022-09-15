@@ -296,7 +296,7 @@
         if (!manual && (gameType === 'p2e' || gameType === 'e2e') && autoplay) nextTurn()
     }
 
-    let winner = '', usedPostechC = 0, usedKaistC = 0, error = null, playing=false;
+    let winner = '', usedPostechC = 0, usedKaistC = 0, error = null, playing = false;
 
     async function nextTurn(timeout = 1800) {
         if (playing) return;
@@ -539,12 +539,21 @@
 
 <main bind:clientWidth bind:clientHeight
       on:mousedown={(e)=>(click=true, drag=true, lastX=e.clientX, lastY=e.clientY, initX=e.clientX, initY=e.clientY)}
-      on:mousemove={(e)=>(drag && (Math.abs(initX - e.clientX)>10 || Math.abs(initY - e.clientY)>10) && ((click=false), (dragged = true)))}
+      on:touchstart={(e)=>(click=true, drag=true, lastX=e.touches[0].clientX, lastY=e.touches[0].clientY, initX=e.touches[0].clientX, initY=e.touches[0].clientY)}
+      on:touchmove={(e)=>e.preventDefault()}
+
+      on:mousemove={(e)=>(drag && (Math.abs(initX - e.clientX)>20 || Math.abs(initY - e.clientY)>20) && ((click=false), (dragged = true)))}
+      on:touchmove={(e)=>(drag && (Math.abs(initX - e.touches[0].clientX)>20 || Math.abs(initY - e.touches[0].clientY)>20) && ((click=false), (dragged = true)))}
       on:mousemove={(e)=>(drag && ($rotation += (e.clientX - lastX) / 100) && (lastX = e.clientX))}
+      on:touchmove={(e)=>(drag && ($rotation += (e.touches[0].clientX - lastX) / 100) && (lastX = e.touches[0].clientX))}
       on:mousemove={(e)=>(cursor={x:e.clientX, y:e.clientY})}
+      on:touchmove={(e)=>(cursor={x:e.touches[0].clientX, y:e.touches[0].clientY})}
       on:mousemove={(e)=>(drag && ($cameraZ = Math.min(Math.max($cameraZ + (e.clientY - lastY) / 50, 0), Math.PI * 0.85)) && (lastY = e.clientY) && (dragged = true))}
+      on:touchmove={(e)=>(drag && ($cameraZ = Math.min(Math.max($cameraZ + (e.touches[0].clientY - lastY) / 50, 0), Math.PI * 0.85)) && (lastY = e.touches[0].clientY) && (dragged = true))}
       on:mouseup={()=>((click && (dragged && (++round, ((dragged = false) || --round)))))}
+      on:touchend={()=>((click && (dragged && (++round, ((dragged = false) || --round)))))}
       on:mouseup={()=>(drag=false)}
+      on:touchend={()=>(drag=false)}
       on:click={handleClick}>
     <Canvas let:sti w={clientWidth} h={clientHeight} bind:this={ctx}>
         <Scene {sti} let:scene id="scene1" props={{ background: 0x000000, fog }}>
