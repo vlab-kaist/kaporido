@@ -290,13 +290,17 @@
         }
     }
 
+    let autoplay = false;
+
     $: {
-        if (!manual && (gameType === 'p2e' || gameType === 'e2e')) nextTurn()
+        if (!manual && (gameType === 'p2e' || gameType === 'e2e') && autoplay) nextTurn()
     }
 
-    let winner = '', usedPostechC = 0, usedKaistC = 0, error = null;
+    let winner = '', usedPostechC = 0, usedKaistC = 0, error = null, playing=false;
 
     async function nextTurn(timeout = 1800) {
+        if (playing) return;
+        playing = true;
         action = ''
         ++cnt;
         server && server.send(lastAction);
@@ -362,6 +366,7 @@
         } else setTimeout(() => {
             round++;
             load = true;
+            playing = false;
         }, timeout)
     }
 
@@ -426,12 +431,21 @@
     &.load {
       bottom: 20px;
       right: 20px;
-      pointer-events: none;
+      display: flex;
+
+      & > * {
+        margin: 0 0 0 5px;
+      }
     }
 
     &.next {
       bottom: 20px;
       right: 20px;
+      display: flex;
+
+      & > * {
+        margin: 0 0 0 5px;
+      }
     }
 
     &.fullscreen {
@@ -462,7 +476,17 @@
       display: flex;
 
       & > * {
-        margin: 0 5px;
+        margin: 0 0 0 5px;
+      }
+    }
+
+    &.autoplay {
+      bottom: 20px;
+      right: 100px;
+      display: flex;
+
+      & > * {
+        margin: 0 0 0 5px;
       }
     }
 
@@ -550,12 +574,14 @@
         아무 곳이나 눌러서 게임으로 돌아가기
     </div>
 
-    <div class="toolbar next button" class:hide={dragged || !load || manual} on:click={()=>nextTurn(1800)}>
-        다음으로
+    <div class="toolbar next" class:hide={dragged || !load || manual} on:click={()=>nextTurn(1800)}>
+        <span class="button" class:active={autoplay} on:click={()=>(autoplay=!autoplay)}>자동 플레이</span>
+        <span class="button">다음으로</span>
     </div>
 
-    <div class="toolbar load button" class:hide={dragged || load}>
-        수를 찾는 중...
+    <div class="toolbar load" class:hide={dragged || load}>
+        <span class="button" class:active={autoplay} on:click={()=>(autoplay=!autoplay)}>자동 플레이</span>
+        <span class="button">수를 찾는 중...</span>
     </div>
 
     <div class="toolbar action" class:hide={dragged || !load || !manual}>
@@ -583,29 +609,29 @@
         <h1>{winner}의 승리!</h1>
         <h3>{winner}이(가) 승리했어요.</h3>
         <div style="display: flex;flex-direction: row">
-            <div class="button" style="margin: 0 5px;" on:click={()=>location.reload()}>다시 플레이</div>
+            <div class="button" style="margin: 0 0 0 5px;" on:click={()=>location.reload()}>다시 플레이</div>
         </div>
     </div>
 
     <div class="toolbar fullscreen" class:hide={!error}>
         <h1>오류가 발생했어요.</h1>
         <div style="display: flex;flex-direction: row">
-            <div class="button" style="margin: 0 5px;" on:click={()=>location.reload()}>다시 플레이</div>
+            <div class="button" style="margin: 0 0 0 5px;" on:click={()=>location.reload()}>다시 플레이</div>
         </div>
     </div>
 
     <div class="toolbar fullscreen" class:hide={gameType}>
         <h1>Puoribor</h1>
         <div style="display: flex;flex-direction: row">
-            <div class="button" style="margin: 0 5px;" on:click={()=>{
+            <div class="button" style="margin: 0 0 0 5px;" on:click={()=>{
                 gameType = 'p2p';
             }}>1 vs 1
             </div>
-            <div class="button" style="margin: 0 5px;" on:click={()=>{
+            <div class="button" style="margin: 0 0 0 5px;" on:click={()=>{
                 gameType = 'p2e';
             }}>1 vs AI
             </div>
-            <div class="button" style="margin: 0 5px;" on:click={()=>{
+            <div class="button" style="margin: 0 0 0 5px;" on:click={()=>{
                 gameType = 'e2e';
             }}>AI vs AI
             </div>
