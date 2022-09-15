@@ -606,11 +606,11 @@
     <div class="toolbar turn" class:hide={dragged}>
         <div class:active={round % 2} style="background: #1487C888;">
             <img src={nupjukImage}/>
-            <span>{gameType === 'e2e' ? 'AI' : 'KAIST'}</span>
+            <span>{gameType === 'e2e' ? 'KAIST' : 'KAIST'}</span>
         </div>
         <div class:active={(round + 1) % 2} style="background: #C8015088;">
             <img src="https://w.namu.la/s/006a9fbc14a31c4be81260b185c92483c23c35aac49903a99e6ff20f3e7556fbba9cf64c357da20fa50794492d3658349494db25efba04ab03a91ae9179ec5512d9d7be9d3266304fdf2d5cdd108b1aa2435b0d31feb62fcf5647619f09e372a"/>
-            <span>{gameType === 'e2e' ? 'AI' : (gameType === 'p2e' ? 'AI' : 'POSTECH')}</span>
+            <span>{gameType === 'e2e' ? 'POSTECH' : (gameType === 'p2e' ? 'AI' : 'POSTECH')}</span>
         </div>
     </div>
 
